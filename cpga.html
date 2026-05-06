@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AU CGPA Calculator — Annamalai University</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --card: #1a1a26;
+  --border: #2a2a3e;
+  --accent: #7c6af7;
+  --accent2: #f06292;
+  --accent3: #4dd0e1;
+  --gold: #ffd54f;
+  --text: #e8e8f0;
+  --muted: #6b6b8a;
+  --success: #66bb6a;
+  --warning: #ffa726;
+  --danger: #ef5350;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0 0 60px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Ambient background */
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px; left: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,106,247,0.12) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -200px; right: -200px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(240,98,146,0.1) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* Header */
+.header {
+  position: relative;
+  text-align: center;
+  padding: 40px 20px 30px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(124,106,247,0.08) 0%, transparent 100%);
+  z-index: 1;
+}
+
+.header-badge {
+  display: inline-block;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  background: rgba(124,106,247,0.12);
+  border: 1px solid rgba(124,106,247,0.3);
+  padding: 5px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  font-size: clamp(24px, 5vw, 42px);
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.header h1 span {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header p {
+  color: var(--muted);
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 20px 0;
+  flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+
+.tab-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 20px;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  box-shadow: 0 4px 20px rgba(124,106,247,0.35);
+}
+
+.tab-btn:hover:not(.active) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* Sections */
+.section {
+  display: none;
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 0 16px;
+  position: relative; z-index: 1;
+}
+.section.active { display: block; }
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* Form elements */
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+input[type="number"], input[type="text"], select, input[type="range"] {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,106,247,0.15);
+}
+
+select option { background: var(--card); }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #9c8bff);
+  color: white;
+  box-shadow: 0 4px 15px rgba(124,106,247,0.3);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,106,247,0.4); }
+
+.btn-secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-secondary:hover { border-color: var(--accent); }
+
+.btn-danger {
+  background: rgba(239,83,80,0.15);
+  border: 1px solid rgba(239,83,80,0.3);
+  color: var(--danger);
+}
+.btn-danger:hover { background: rgba(239,83,80,0.25); }
+
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+.btn-full { width: 100%; }
+
+/* Subject row */
+.subject-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 100px 36px;
+  gap: 8px;
+  align-items: end;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+.subject-row:hover { border-color: rgba(124,106,247,0.4); }
+
+.subject-row .subject-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.remove-btn {
+  background: rgba(239,83,80,0.1);
+  border: 1px solid rgba(239,83,80,0.2);
+  color: var(--danger);
+  border-radius: 8px;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  align-self: flex-end;
+}
+.remove-btn:hover { background: rgba(239,83,80,0.25); }
+
+/* Result display */
+.result-card {
+  background: linear-gradient(135deg, rgba(124,106,247,0.1), rgba(240,98,146,0.08));
+  border: 1px solid rgba(124,106,247,0.25);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.result-gpa {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(48px, 12vw, 72px);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+
+.result-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-family: 'Space Mono', monospace;
+}
+
+.result-class {
+  margin-top: 14px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.result-meta {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.result-meta-item {
+  text-align: center;
+}
+.result-meta-item .val {
+  font-family: 'Space Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.result-meta-item .lbl {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Grade bar */
+.grade-bar-wrap {
+  margin-top: 18px;
+}
+.grade-bar-bg {
+  height: 8px;
+  background: var(--surface);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.grade-bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* Semester list (CGPA) */
+.semester-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+.semester-item:hover { border-color: rgba(124,106,247,0.3); }
+.sem-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  width: 40px;
+  flex-shrink: 0;
+}
+.sem-inputs { display: flex; gap: 8px; flex: 1; }
+.sem-inputs input { flex: 1; }
+
+/* CGPA result */
+.cgpa-result {
+  text-align: center;
+  padding: 28px;
+  background: linear-gradient(135deg, rgba(77,208,225,0.08), rgba(124,106,247,0.1));
+  border: 1px solid rgba(77,208,225,0.2);
+  border-radius: var(--radius);
+  margin-top: 20px;
+}
+
+.cgpa-big {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(48px, 12vw, 72px);
+  font-weight: 700;
+  color: var(--accent3);
+  line-height: 1;
+}
+
+/* What-if section */
+.target-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+.target-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px;
+  color: var(--gold);
+}
+
+/* Grade table */
+.grade-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.grade-table th {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.grade-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.grade-table tr:last-child td { border-bottom: none; }
+.grade-badge {
+  display: inline-block;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--card);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 999;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* OCR */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent);
+  background: rgba(124,106,247,0.05);
+}
+.upload-zone input { display: none; }
+.upload-icon { font-size: 36px; margin-bottom: 8px; }
+.upload-zone p { color: var(--muted); font-size: 13px; }
+
+.loader-bar {
+  height: 3px;
+  background: var(--surface);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 12px;
+  display: none;
+}
+.loader-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 3px;
+  transition: width 0.3s;
+  animation: loading-pulse 1.5s ease-in-out infinite;
+}
+@keyframes loading-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Responsive */
+@media(max-width: 520px) {
+  .subject-row {
+    grid-template-columns: 1fr 70px 90px 36px;
+    gap: 6px;
+  }
+}
+
+/* Share button */
+.share-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Progress rings placeholder */
+.ring-wrap { display: flex; justify-content: center; margin: 16px 0; }
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0;
+}
+
+/* Info chips */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.chip {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.chip-s { background: rgba(102,187,106,0.15); color: #66bb6a; }
+.chip-a { background: rgba(124,106,247,0.15); color: #9c8bff; }
+.chip-b { background: rgba(77,208,225,0.15); color: #4dd0e1; }
+.chip-c { background: rgba(255,213,79,0.15); color: #ffd54f; }
+.chip-d { background: rgba(255,167,38,0.15); color: #ffa726; }
+.chip-e { background: rgba(239,83,80,0.15); color: #ef5350; }
+.chip-ra { background: rgba(239,83,80,0.08); color: #b71c1c; }
+
+.flex-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.flex-row > * { flex: 1; min-width: 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">Annamalai University</div>
+  <h1>CGPA<span> Calculator</span></h1>
+  <p>Semester GPA · Cumulative CGPA · What-If Planner · OCR Scanner</p>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('gpa')">📊 Semester GPA</button>
+  <button class="tab-btn" onclick="showTab('cgpa')">🎓 CGPA</button>
+  <button class="tab-btn" onclick="showTab('whatif')">🎯 What-If</button>
+  <button class="tab-btn" onclick="showTab('ocr')">📸 Scan Card</button>
+  <button class="tab-btn" onclick="showTab('guide')">📋 Grade Guide</button>
+</div>
+
+<!-- ═══════════════════════════ GPA TAB ═══════════════════════════ -->
+<div id="tab-gpa" class="section active">
+
+  <div class="card">
+    <div class="card-title">⚙ Setup</div>
+    <div class="flex-row">
+      <div>
+        <label>Number of Subjects</label>
+        <input type="number" id="numSubjects" value="6" min="1" max="20">
+      </div>
+      <div>
+        <label>Default Credits</label>
+        <select id="defaultCredits">
+          <option value="2">2 Credits</option>
+          <option value="3" selected>3 Credits</option>
+          <option value="4">4 Credits</option>
+          <option value="5">5 Credits</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-full" style="margin-top:12px" onclick="generateFields()">⚡ Generate Fields</button>
+  </div>
+
+  <div id="subjects-container"></div>
+
+  <div style="display:flex;gap:10px;margin-top:8px">
+    <button class="btn btn-secondary" style="flex:1" onclick="addSubject()">+ Add Subject</button>
+    <button class="btn btn-primary" style="flex:2" onclick="calculateGPA()">Calculate Semester GPA →</button>
+  </div>
+
+  <div id="gpa-result" style="display:none"></div>
+</div>
+
+<!-- ═══════════════════════════ CGPA TAB ═══════════════════════════ -->
+<div id="tab-cgpa" class="section">
+
+  <div class="card">
+    <div class="card-title">📚 Semester Records</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Enter GPA and total credits for each completed semester.</p>
+    <div id="semesters-container"></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn btn-secondary" style="flex:1" onclick="addSemester()">+ Add Semester</button>
+      <button class="btn btn-primary" style="flex:2" onclick="calculateCGPA()">Calculate CGPA →</button>
+    </div>
+  </div>
+
+  <div id="cgpa-result" style="display:none"></div>
+</div>
+
+<!-- ═══════════════════════════ WHAT-IF TAB ═══════════════════════════ -->
+<div id="tab-whatif" class="section">
+
+  <div class="card">
+    <div class="card-title">🎯 Target Planner</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Find out what GPA you need in upcoming semesters to hit your target CGPA.</p>
+
+    <label>Current CGPA</label>
+    <input type="number" id="wi_current_cgpa" placeholder="e.g. 7.2" step="0.01" min="0" max="10">
+
+    <label style="margin-top:12px">Total Credits Completed</label>
+    <input type="number" id="wi_credits_done" placeholder="e.g. 120">
+
+    <label style="margin-top:12px">Credits Remaining</label>
+    <input type="number" id="wi_credits_left" placeholder="e.g. 60">
+
+    <label style="margin-top:12px">Target CGPA</label>
+    <div class="target-display">
+      <input type="range" id="wi_target" min="5" max="10" step="0.01" value="8.5" oninput="document.getElementById('wi_target_val').textContent=parseFloat(this.value).toFixed(2)" style="flex:1;margin-right:16px">
+      <span class="target-val" id="wi_target_val">8.50</span>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="calculateWhatIf()">Calculate Required GPA →</button>
+  </div>
+
+  <div id="whatif-result" style="display:none"></div>
+</div>
+
+<!-- ═══════════════════════════ OCR TAB ═══════════════════════════ -->
+<div id="tab-ocr" class="section">
+
+  <div class="card">
+    <div class="card-title">📸 Marksheet Scanner</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Upload a screenshot of your AU result/grade card. We'll extract grades and compute your GPA automatically.</p>
+
+    <div class="upload-zone" id="dropzone" onclick="document.getElementById('ocr-upload').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+      <input type="file" id="ocr-upload" accept="image/*" onchange="handleFileSelect(event)">
+      <div class="upload-icon">🖼</div>
+      <p><strong style="color:var(--text)">Click to upload</strong> or drag & drop</p>
+      <p style="margin-top:4px">PNG, JPG supported · AU grade cards work best</p>
+    </div>
+
+    <div class="loader-bar" id="loader-bar">
+      <div class="loader-bar-fill" id="loader-fill"></div>
+    </div>
+    <p id="loader-text" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px;display:none"></p>
+
+    <div id="ocr-preview" style="margin-top:12px;display:none">
+      <img id="preview-img" style="width:100%;border-radius:10px;border:1px solid var(--border)">
+    </div>
+  </div>
+
+  <div id="ocr-result" style="display:none"></div>
+</div>
+
+<!-- ═══════════════════════════ GUIDE TAB ═══════════════════════════ -->
+<div id="tab-guide" class="section">
+
+  <div class="card">
+    <div class="card-title">📋 AU Grading System</div>
+    <table class="grade-table">
+      <thead>
+        <tr>
+          <th>Grade</th>
+          <th>Grade Point</th>
+          <th>Performance</th>
+          <th>Range (Marks)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="grade-badge chip-s">S</span></td>
+          <td><strong>10</strong></td>
+          <td>Outstanding</td>
+          <td>90 – 100</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge chip-a">A</span></td>
+          <td><strong>9</strong></td>
+          <td>Excellent</td>
+          <td>80 – 89</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge chip-b">B</span></td>
+          <td><strong>8</strong></td>
+          <td>Very Good</td>
+          <td>70 – 79</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge chip-c">C</span></td>
+          <td><strong>7</strong></td>
+          <td>Good</td>
+          <td>60 – 69</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge chip-d">D</span></td>
+          <td><strong>6</strong></td>
+          <td>Average</td>
+          <td>50 – 59</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge chip-e">E</span></td>
+          <td><strong>5</strong></td>
+          <td>Pass</td>
+          <td>40 – 49</td>
+        </tr>
+        <tr>
+          <td><span class="grade-badge chip-ra">RA</span></td>
+          <td><strong>0</strong></td>
+          <td>Reappear</td>
+          <td>Below 40</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏅 Classification</div>
+    <table class="grade-table">
+      <thead>
+        <tr><th>CGPA Range</th><th>Classification</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>8.25 – 10.0</td><td>🏆 <strong>First Class with Distinction</strong></td></tr>
+        <tr><td>6.5 – 8.24</td><td>🎖 <strong>First Class</strong></td></tr>
+        <tr><td>5.5 – 6.49</td><td>👍 <strong>Second Class</strong></td></tr>
+        <tr><td>Below 5.5</td><td>⚠ <strong>Pass Class / Needs Improvement</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💡 GPA Formula</div>
+    <div style="background:var(--surface);border-radius:10px;padding:16px;font-family:'Space Mono',monospace;font-size:13px;color:var(--accent3)">
+      GPA = Σ(Credit × Grade Point) / Σ(Credits)<br><br>
+      CGPA = Σ(Sem Credits × Sem GPA) / Σ(All Credits)
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const gradePoints = { S:10, A:9, B:8, C:7, D:6, E:5, RA:0 };
+let subjectCount = 0;
+let semesterCount = 0;
+
+// ── TABS ──
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── TOAST ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── GPA TAB ──
+function generateFields() {
+  const n = parseInt(document.getElementById('numSubjects').value);
+  const dc = parseInt(document.getElementById('defaultCredits').value);
+  const container = document.getElementById('subjects-container');
+  container.innerHTML = '';
+  subjectCount = 0;
+  for (let i = 0; i < n; i++) addSubjectRow(dc);
+}
+
+function addSubject() {
+  const dc = parseInt(document.getElementById('defaultCredits').value);
+  addSubjectRow(dc);
+}
+
+function addSubjectRow(defaultCredit = 3) {
+  const id = subjectCount++;
+  const container = document.getElementById('subjects-container');
+  const div = document.createElement('div');
+  div.className = 'subject-row';
+  div.id = 'subject-' + id;
+  div.innerHTML = `
+    <div>
+      <div class="subject-num">S${String(id+1).padStart(2,'0')}</div>
+      <input type="text" placeholder="Subject name (optional)" id="sname${id}" style="font-size:13px">
+    </div>
+    <div>
+      <label>Credits</label>
+      <input type="number" id="scred${id}" value="${defaultCredit}" min="1" max="6" style="text-align:center">
+    </div>
+    <div>
+      <label>Grade</label>
+      <select id="sgrade${id}">
+        ${Object.keys(gradePoints).map(g => `<option value="${g}">${g} (${gradePoints[g]})</option>`).join('')}
+      </select>
+    </div>
+    <button class="remove-btn" onclick="removeSubject(${id})" title="Remove">×</button>
+  `;
+  container.appendChild(div);
+}
+
+function removeSubject(id) {
+  const el = document.getElementById('subject-' + id);
+  if (el) el.remove();
+}
+
+function calculateGPA() {
+  const rows = document.querySelectorAll('.subject-row');
+  if (!rows.length) { toast('❌ No subjects added'); return; }
+
+  let totalPoints = 0, totalCredits = 0, valid = 0;
+  const breakdown = [];
+
+  rows.forEach(row => {
+    const id = row.id.replace('subject-', '');
+    const credEl = document.getElementById('scred' + id);
+    const gradeEl = document.getElementById('sgrade' + id);
+    const nameEl = document.getElementById('sname' + id);
+    if (!credEl || !gradeEl) return;
+    const credit = parseFloat(credEl.value);
+    const grade = gradeEl.value;
+    if (isNaN(credit) || credit <= 0) return;
+    const name = nameEl.value || ('Subject ' + (valid + 1));
+    totalPoints += credit * gradePoints[grade];
+    totalCredits += credit;
+    valid++;
+    breakdown.push({ name, credit, grade, gp: gradePoints[grade] });
+  });
+
+  if (!totalCredits) { toast('❌ Enter valid credits'); return; }
+
+  const gpa = totalPoints / totalCredits;
+  renderGPAResult(gpa, totalCredits, totalPoints, breakdown);
+}
+
+function renderGPAResult(gpa, credits, points, breakdown) {
+  const cls = getClassification(gpa);
+  const pct = (gpa / 10 * 100).toFixed(1);
+
+  let breakHTML = breakdown.map(b => {
+    const color = getGradeColor(b.grade);
+    return `<tr>
+      <td>${b.name}</td>
+      <td style="text-align:center">${b.credit}</td>
+      <td style="text-align:center"><span class="grade-badge" style="background:${color}20;color:${color}">${b.grade}</span></td>
+      <td style="text-align:center;font-family:'Space Mono',monospace">${b.gp}</td>
+      <td style="text-align:center;font-family:'Space Mono',monospace">${(b.credit * b.gp).toFixed(0)}</td>
+    </tr>`;
+  }).join('');
+
+  const el = document.getElementById('gpa-result');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="result-card">
+      <div class="result-label">Semester GPA</div>
+      <div class="result-gpa">${gpa.toFixed(2)}</div>
+      <div class="result-class">${cls.icon} ${cls.label}</div>
+      <div class="grade-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)">
+          <span>0</span><span>${pct}%</span><span>10</span>
+        </div>
+        <div class="grade-bar-bg">
+          <div class="grade-bar-fill" id="bar-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="result-meta">
+        <div class="result-meta-item"><div class="val">${credits}</div><div class="lbl">Total Credits</div></div>
+        <div class="result-meta-item"><div class="val">${points.toFixed(0)}</div><div class="lbl">Grade Points</div></div>
+        <div class="result-meta-item"><div class="val">${breakdown.length}</div><div class="lbl">Subjects</div></div>
+      </div>
+      <div class="share-row">
+        <button class="btn btn-secondary btn-sm" onclick="copyResult(${gpa.toFixed(2)})">📋 Copy Result</button>
+        <button class="btn btn-secondary btn-sm" onclick="addToCGPA(${gpa.toFixed(2)}, ${credits})">➕ Add to CGPA</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">Subject Breakdown</div>
+      <table class="grade-table">
+        <thead><tr><th>Subject</th><th style="text-align:center">Cr</th><th style="text-align:center">Grade</th><th style="text-align:center">GP</th><th style="text-align:center">Points</th></tr></thead>
+        <tbody>${breakHTML}</tbody>
+      </table>
+    </div>
+  `;
+
+  setTimeout(() => {
+    const fill = document.getElementById('bar-fill');
+    if (fill) fill.style.width = pct + '%';
+  }, 100);
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  toast('✅ GPA calculated!');
+}
+
+function addToCGPA(gpa, credits) {
+  showTab2('cgpa');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  addSemesterWithData(gpa, credits);
+  toast('✅ Added to CGPA tracker!');
+}
+
+function showTab2(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── CGPA TAB ──
+function initSemesters() {
+  for (let i = 0; i < 2; i++) addSemester();
+}
+
+function addSemester() {
+  const id = semesterCount++;
+  const container = document.getElementById('semesters-container');
+  const div = document.createElement('div');
+  div.className = 'semester-item';
+  div.id = 'sem-' + id;
+  div.innerHTML = `
+    <div class="sem-num">SEM ${id + 1}</div>
+    <div class="sem-inputs">
+      <div><label>GPA</label><input type="number" id="sgpa${id}" placeholder="0.00" step="0.01" min="0" max="10"></div>
+      <div><label>Credits</label><input type="number" id="scredits${id}" placeholder="e.g. 24"></div>
+    </div>
+    <button class="remove-btn" onclick="removeSemester(${id})" title="Remove">×</button>
+  `;
+  container.appendChild(div);
+}
+
+function addSemesterWithData(gpa, credits) {
+  addSemester();
+  const id = semesterCount - 1;
+  setTimeout(() => {
+    const gpaEl = document.getElementById('sgpa' + id);
+    const crEl = document.getElementById('scredits' + id);
+    if (gpaEl) gpaEl.value = gpa;
+    if (crEl) crEl.value = credits;
+  }, 50);
+}
+
+function removeSemester(id) {
+  const el = document.getElementById('sem-' + id);
+  if (el) el.remove();
+}
+
+function calculateCGPA() {
+  const items = document.querySelectorAll('.semester-item');
+  let totalWeighted = 0, totalCredits = 0, sems = 0;
+  const semData = [];
+
+  items.forEach(item => {
+    const id = item.id.replace('sem-', '');
+    const gpa = parseFloat(document.getElementById('sgpa' + id)?.value);
+    const cred = parseFloat(document.getElementById('scredits' + id)?.value);
+    if (isNaN(gpa) || isNaN(cred) || cred <= 0) return;
+    totalWeighted += gpa * cred;
+    totalCredits += cred;
+    sems++;
+    semData.push({ sem: sems, gpa, cred });
+  });
+
+  if (!totalCredits) { toast('❌ Enter semester data first'); return; }
+
+  const cgpa = totalWeighted / totalCredits;
+  renderCGPAResult(cgpa, totalCredits, sems, semData);
+}
+
+function renderCGPAResult(cgpa, credits, sems, semData) {
+  const cls = getClassification(cgpa);
+  const pct = (cgpa / 10 * 100).toFixed(1);
+
+  const semBars = semData.map(s => {
+    const w = (s.gpa / 10 * 100).toFixed(1);
+    const color = getGPAColor(s.gpa);
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--muted)">Semester ${s.sem}</span>
+        <span style="font-family:'Space Mono',monospace;color:${color}">${s.gpa.toFixed(2)}</span>
+      </div>
+      <div class="grade-bar-bg"><div class="grade-bar-fill" style="width:${w}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+
+  const el = document.getElementById('cgpa-result');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="cgpa-result">
+      <div class="result-label">Cumulative CGPA</div>
+      <div class="cgpa-big">${cgpa.toFixed(2)}</div>
+      <div class="result-class" style="margin-top:10px">${cls.icon} ${cls.label}</div>
+      <div class="result-meta" style="margin-top:16px">
+        <div class="result-meta-item"><div class="val">${credits}</div><div class="lbl">Total Credits</div></div>
+        <div class="result-meta-item"><div class="val">${sems}</div><div class="lbl">Semesters</div></div>
+        <div class="result-meta-item"><div class="val">${(credits/sems).toFixed(0)}</div><div class="lbl">Avg Cr/Sem</div></div>
+      </div>
+      <div class="share-row">
+        <button class="btn btn-secondary btn-sm" onclick="copyResult(${cgpa.toFixed(2)}, true)">📋 Copy CGPA</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">Semester Breakdown</div>
+      ${semBars}
+    </div>
+  `;
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  toast('✅ CGPA calculated!');
+}
+
+// ── WHAT-IF ──
+function calculateWhatIf() {
+  const curr = parseFloat(document.getElementById('wi_current_cgpa').value);
+  const done = parseFloat(document.getElementById('wi_credits_done').value);
+  const left = parseFloat(document.getElementById('wi_credits_left').value);
+  const target = parseFloat(document.getElementById('wi_target').value);
+
+  if (isNaN(curr) || isNaN(done) || isNaN(left)) { toast('❌ Fill all fields'); return; }
+  if (curr > 10 || curr < 0) { toast('❌ CGPA must be 0–10'); return; }
+
+  const totalCredits = done + left;
+  const requiredPoints = target * totalCredits;
+  const currentPoints = curr * done;
+  const neededPoints = requiredPoints - currentPoints;
+  const requiredGPA = neededPoints / left;
+
+  const el = document.getElementById('whatif-result');
+  el.style.display = 'block';
+
+  if (requiredGPA > 10) {
+    el.innerHTML = `
+      <div class="result-card" style="border-color:rgba(239,83,80,0.3)">
+        <div style="font-size:36px;margin-bottom:8px">😔</div>
+        <div class="result-label">Target Not Achievable</div>
+        <div style="color:var(--muted);font-size:14px;margin-top:8px">
+          You would need a GPA of <strong style="color:var(--danger)">${requiredGPA.toFixed(2)}</strong> in remaining semesters,
+          which exceeds the maximum (10.0).<br><br>
+          Try adjusting your target CGPA to a more reachable value.
+        </div>
+        <div class="result-meta" style="margin-top:16px">
+          <div class="result-meta-item"><div class="val" style="color:var(--danger)">${curr.toFixed(2)}</div><div class="lbl">Current CGPA</div></div>
+          <div class="result-meta-item"><div class="val">${target.toFixed(2)}</div><div class="lbl">Target CGPA</div></div>
+          <div class="result-meta-item"><div class="val">${left}</div><div class="lbl">Remaining Cr</div></div>
+        </div>
+      </div>`;
+  } else if (requiredGPA < 0) {
+    el.innerHTML = `
+      <div class="result-card" style="border-color:rgba(102,187,106,0.3)">
+        <div style="font-size:36px;margin-bottom:8px">🎉</div>
+        <div class="result-label">Already Achieved!</div>
+        <div style="color:var(--muted);font-size:14px;margin-top:8px">
+          Your current CGPA of <strong style="color:var(--success)">${curr.toFixed(2)}</strong> already exceeds the target of <strong>${target.toFixed(2)}</strong>.
+          Keep it up! 🚀
+        </div>
+      </div>`;
+  } else {
+    const diff = target - curr;
+    const cls = getGPAColor(requiredGPA);
+    el.innerHTML = `
+      <div class="result-card">
+        <div class="result-label">Required GPA in Remaining Semesters</div>
+        <div class="result-gpa" style="color:${cls};-webkit-text-fill-color:${cls}">${requiredGPA.toFixed(2)}</div>
+        <div class="result-class">${getClassification(requiredGPA).icon} ${getClassification(requiredGPA).label}</div>
+        <div class="result-meta" style="margin-top:16px">
+          <div class="result-meta-item"><div class="val">${curr.toFixed(2)}</div><div class="lbl">Current</div></div>
+          <div class="result-meta-item"><div class="val" style="color:var(--gold)">+${diff.toFixed(2)}</div><div class="lbl">Needed Gain</div></div>
+          <div class="result-meta-item"><div class="val">${target.toFixed(2)}</div><div class="lbl">Target</div></div>
+        </div>
+        <div style="margin-top:16px;font-size:13px;color:var(--muted)">
+          You need <strong style="color:var(--text)">${neededPoints.toFixed(1)}</strong> grade points over the remaining
+          <strong style="color:var(--text)">${left}</strong> credits.
+        </div>
+      </div>`;
+  }
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  toast('✅ What-if calculated!');
+}
+
+// ── OCR ──
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processOCRFile(file);
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processOCRFile(file);
+}
+
+function processOCRFile(file) {
+  if (!file.type.startsWith('image/')) { toast('❌ Please upload an image file'); return; }
+
+  const preview = document.getElementById('ocr-preview');
+  const img = document.getElementById('preview-img');
+  img.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+
+  const loaderBar = document.getElementById('loader-bar');
+  const loaderFill = document.getElementById('loader-fill');
+  const loaderText = document.getElementById('loader-text');
+
+  loaderBar.style.display = 'block';
+  loaderText.style.display = 'block';
+  loaderText.textContent = '🔍 Scanning image...';
+  loaderFill.style.width = '10%';
+
+  document.getElementById('ocr-result').style.display = 'none';
+
+  Tesseract.recognize(file, 'eng', {
+    logger: m => {
+      if (m.status === 'recognizing text') {
+        loaderFill.style.width = (m.progress * 100).toFixed(0) + '%';
+        loaderText.textContent = `⚙ Recognizing... ${(m.progress * 100).toFixed(0)}%`;
+      }
+    }
+  }).then(({ data: { text } }) => {
+    loaderFill.style.width = '100%';
+    loaderText.textContent = '✅ Done!';
+    setTimeout(() => { loaderBar.style.display = 'none'; loaderText.style.display = 'none'; }, 1000);
+
+    parseOCRText(text);
+  }).catch(err => {
+    loaderBar.style.display = 'none';
+    loaderText.style.display = 'none';
+    toast('❌ OCR failed. Try a clearer image.');
+  });
+}
+
+function parseOCRText(text) {
+  console.log('OCR Text:', text);
+
+  // Try to find credit-grade pairs like "3  B" or "4  A"
+  const lines = text.split('\n').filter(l => l.trim().length > 0);
+
+  // Extract all grade occurrences
+  const gradeMatches = text.match(/\b(S|A|B|C|D|E|RA)\b/g) || [];
+
+  // Try to extract credits near grades
+  const creditMatches = text.match(/\b([2-6])\b/g) || [];
+
+  const detected = [];
+  let defaultCredit = 3;
+
+  if (gradeMatches.length > 0) {
+    for (let i = 0; i < gradeMatches.length; i++) {
+      const credit = parseInt(creditMatches[i]) || defaultCredit;
+      detected.push({ grade: gradeMatches[i], credit });
+    }
+  }
+
+  const el = document.getElementById('ocr-result');
+  el.style.display = 'block';
+
+  if (!detected.length) {
+    el.innerHTML = `
+      <div class="card">
+        <div class="card-title">❌ No Grades Detected</div>
+        <p style="font-size:13px;color:var(--muted)">Couldn't detect grades clearly. Try a higher-res, well-lit screenshot. Detected text:</p>
+        <div style="background:var(--surface);border-radius:8px;padding:12px;font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);margin-top:10px;max-height:120px;overflow-y:auto;white-space:pre-wrap">${text.substring(0, 500)}</div>
+      </div>`;
+    return;
+  }
+
+  // Calculate
+  let totalPoints = 0, totalCredits = 0;
+  detected.forEach(d => {
+    totalPoints += gradePoints[d.grade] * d.credit;
+    totalCredits += d.credit;
+  });
+  const gpa = totalPoints / totalCredits;
+
+  const breakHTML = detected.map((d, i) => `
+    <tr>
+      <td>Subject ${i + 1}</td>
+      <td style="text-align:center">${d.credit}</td>
+      <td style="text-align:center"><span class="grade-badge chip-${d.grade.toLowerCase().replace('ra','ra')}" style="background:${getGradeColor(d.grade)}20;color:${getGradeColor(d.grade)}">${d.grade}</span></td>
+      <td style="text-align:center;font-family:'Space Mono',monospace">${gradePoints[d.grade]}</td>
+    </tr>`).join('');
+
+  el.innerHTML = `
+    <div class="result-card">
+      <div class="result-label">OCR Detected — Semester GPA</div>
+      <div class="result-gpa">${gpa.toFixed(2)}</div>
+      <div class="result-class">${getClassification(gpa).icon} ${getClassification(gpa).label}</div>
+      <div class="result-meta" style="margin-top:16px">
+        <div class="result-meta-item"><div class="val">${detected.length}</div><div class="lbl">Grades Found</div></div>
+        <div class="result-meta-item"><div class="val">${totalCredits}</div><div class="lbl">Total Credits</div></div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:12px">⚠ Credits were estimated. Verify manually for accuracy.</p>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">Detected Grades</div>
+      <table class="grade-table">
+        <thead><tr><th>Subject</th><th style="text-align:center">Credits</th><th style="text-align:center">Grade</th><th style="text-align:center">GP</th></tr></thead>
+        <tbody>${breakHTML}</tbody>
+      </table>
+    </div>
+  `;
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  toast(`✅ Found ${detected.length} grades!`);
+}
+
+// ── HELPERS ──
+function getClassification(gpa) {
+  if (gpa >= 8.25) return { icon: '🏆', label: 'First Class with Distinction' };
+  if (gpa >= 6.5)  return { icon: '🎖', label: 'First Class' };
+  if (gpa >= 5.5)  return { icon: '👍', label: 'Second Class' };
+  return { icon: '⚠', label: 'Needs Improvement' };
+}
+
+function getGradeColor(grade) {
+  const map = { S:'#66bb6a', A:'#9c8bff', B:'#4dd0e1', C:'#ffd54f', D:'#ffa726', E:'#ef5350', RA:'#b71c1c' };
+  return map[grade] || '#6b6b8a';
+}
+
+function getGPAColor(gpa) {
+  if (gpa >= 8.25) return '#66bb6a';
+  if (gpa >= 6.5)  return '#9c8bff';
+  if (gpa >= 5.5)  return '#ffd54f';
+  return '#ef5350';
+}
+
+function copyResult(val, isCGPA = false) {
+  const label = isCGPA ? 'CGPA' : 'GPA';
+  const cls = getClassification(val);
+  const text = `My AU ${label}: ${parseFloat(val).toFixed(2)} — ${cls.label} 🎓`;
+  navigator.clipboard.writeText(text).then(() => toast('📋 Copied to clipboard!')).catch(() => toast('❌ Copy failed'));
+}
+
+// ── INIT ──
+generateFields();
+initSemesters();
+</script>
+
+</body>
+</html>
