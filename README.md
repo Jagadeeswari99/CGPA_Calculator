@@ -2,6 +2,9 @@
 
 A modern, feature-rich CGPA (Cumulative Grade Point Average) calculator for **Annamalai University** students. Calculate semester GPA, cumulative CGPA, plan your target grades, and even scan grade cards with OCR.
 
+# LIVE APP LINK
+https://jagadeeswari99.github.io/CGPA_Calculator/
+
 ## Features
 
 📊 **Semester GPA Calculator** - Compute your semester GPA by entering subject names, credits, and grades
